@@ -28,6 +28,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.User;
+import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardHide;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardRow;
@@ -51,7 +52,8 @@ public class QuizHandler implements IMessageHandler
 	
 	public void startQuiz(ChannelBot bot, Message message) throws TelegramApiException
 	{
-		if (_activeQuestion != null)
+		final QuizActiveQuestion activeQuestion = _activeQuestion;
+		if (activeQuestion != null)
 		{
 			BotUtil.sendMessage(bot, message, "There's already another quiz running!", true, true, null);
 			return;
@@ -61,6 +63,7 @@ public class QuizHandler implements IMessageHandler
 		
 		try
 		{
+			_answeredQuestions.clear();
 			_pendingQuestions.addAll(QuizData.getInstance().getQuizQuestions());
 			final QuizQuestion nextQuestion = _pendingQuestions.poll();
 			if (nextQuestion != null)
@@ -77,7 +80,8 @@ public class QuizHandler implements IMessageHandler
 	
 	public void stopQuiz(ChannelBot bot, Message message) throws TelegramApiException
 	{
-		if (_activeQuestion == null)
+		final QuizActiveQuestion activeQuestion = _activeQuestion;
+		if (activeQuestion == null)
 		{
 			BotUtil.sendMessage(bot, message, "There isn't any quiz running right now!", true, true, null);
 			return;
@@ -95,6 +99,55 @@ public class QuizHandler implements IMessageHandler
 		{
 			_lock.writeLock().unlock();
 		}
+	}
+	
+	public void quizSkip(ChannelBot bot, Message message) throws TelegramApiException
+	{
+		final QuizActiveQuestion activeQuestion = _activeQuestion;
+		if (activeQuestion == null)
+		{
+			BotUtil.sendMessage(bot, message, "There isn't any quiz running right now!", true, true, new ReplyKeyboardHide());
+			return;
+		}
+		
+		_lock.writeLock().lock();
+		
+		try
+		{
+			BotUtil.sendMessage(bot, message, "Skipping current question", true, true, new ReplyKeyboardHide());
+			_answeredQuestions.add(activeQuestion);
+			final QuizQuestion nextQuestion = _pendingQuestions.poll();
+			if (nextQuestion != null)
+			{
+				_activeQuestion = new QuizActiveQuestion(nextQuestion);
+				onQuestionAsked(nextQuestion, bot, message);
+			}
+		}
+		finally
+		{
+			_lock.writeLock().unlock();
+		}
+	}
+	
+	public void quizReport(ChannelBot bot, Message message) throws TelegramApiException
+	{
+		final StringJoiner sj = new StringJoiner(System.lineSeparator());
+		sj.add("Questions answered: " + _answeredQuestions.size());
+		for (QuizActiveQuestion activeQuestion : _answeredQuestions)
+		{
+			final boolean maxIncorrectReached = activeQuestion.getIncorrectAnswersCount() >= activeQuestion.getQuestion().getMaxIncorrectAnswers();
+			final boolean maxCorrectReached = activeQuestion.getCorrectAnswersCount() >= activeQuestion.getQuestion().getCorrectAnswersCount();
+			
+			sj.add("Question: " + activeQuestion.getQuestion().getQuestion());
+			sj.add("   | Answered: " + (maxCorrectReached ? "✅" : maxIncorrectReached ? "🅾" : "🖍"));
+			for (QuizParticipant participant : activeQuestion.getParticipants())
+			{
+				sj.add("   | Participant: @" + participant.getUsername() + " answered correctly: " + (participant.hasCorrectAnswer() ? "✅" : "🅾"));
+			}
+			sj.add("-------------------------------------------");
+		}
+		
+		BotUtil.sendMessage(bot, message, sj.toString(), true, true, null);
 	}
 	
 	@Override
@@ -137,7 +190,8 @@ public class QuizHandler implements IMessageHandler
 			sj.add("You have " + nextQuestion.getMaxIncorrectAnswers() + " maximum incorrect answer attempts");
 		}
 		sj.add("There are " + nextQuestion.getCorrectAnswersCount() + " correct answers");
-		ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup();
+		
+		final ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup();
 		markup.setOneTimeKeyboad(true);
 		for (QuizAnswer answer : nextQuestion.getAnswers())
 		{
@@ -153,6 +207,7 @@ public class QuizHandler implements IMessageHandler
 			}
 			row.add(new KeyboardButton(answer.getAnswer()));
 		}
+		
 		BotUtil.sendMessage(bot, message, sj.toString(), false, true, markup);
 	}
 	
@@ -164,38 +219,38 @@ public class QuizHandler implements IMessageHandler
 		activeQuestion.addParticipant(new QuizParticipant(from.getId(), from.getFirstName(), from.getUserName(), answer.isCorrect()));
 		
 		// Announce if participant's answer is correct or incorrect
-		BotUtil.sendMessage(bot, message, "The following answer: " + message.getText() + " is " + (answer.isCorrect() ? "✅ Correct" : "🅾 Incorrect"), true, true, null);
+		BotUtil.sendMessage(bot, message, "The following answer: " + message.getText() + " is " + (answer.isCorrect() ? "✅ Correct!" : "🅾 Incorrect!"), true, true, null);
 		
 		// Verify if all necessary answers were provided and proceed to next question
-		if (answer.isCorrect())
+		final boolean maxIncorrectReached = activeQuestion.getIncorrectAnswersCount() >= activeQuestion.getQuestion().getMaxIncorrectAnswers();
+		final boolean maxCorrectReached = activeQuestion.getCorrectAnswersCount() >= activeQuestion.getQuestion().getCorrectAnswersCount();
+		
+		if (maxIncorrectReached || maxCorrectReached)
 		{
-			if (activeQuestion.getQuestion().getCorrectAnswersCount() == activeQuestion.getCorrectAnswersCount())
+			// Mark the question as answered
+			_answeredQuestions.add(activeQuestion);
+			
+			// Proceed to the next one
+			final QuizQuestion nextQuestion = _pendingQuestions.poll();
+			if (nextQuestion != null)
 			{
-				// Mark the question as answered
-				_answeredQuestions.add(activeQuestion);
+				BotUtil.sendMessage(bot, message, maxIncorrectReached ? "Maximum incorrect answers reached failed to answer this one, proceeding to next question!" : "All necessary answers were provided, proceeding to next question!", false, true, new ReplyKeyboardHide());
+				setQuestion(nextQuestion);
+				onQuestionAsked(nextQuestion, bot, message);
+			}
+			else
+			{
+				_lock.writeLock().lock();
 				
-				// Proceed to the next one
-				final QuizQuestion nextQuestion = _pendingQuestions.poll();
-				if (nextQuestion != null)
+				try
 				{
-					BotUtil.sendMessage(bot, message, "All necessary answers were provided, proceeding to next question", false, true, null);
-					setQuestion(nextQuestion);
-					onQuestionAsked(nextQuestion, bot, message);
+					_pendingQuestions.clear();
+					_activeQuestion = null;
+					BotUtil.sendMessage(bot, message, "All questions have been answered!", false, true, new ReplyKeyboardHide());
 				}
-				else
+				finally
 				{
-					_lock.writeLock().lock();
-					
-					try
-					{
-						_pendingQuestions.clear();
-						_activeQuestion = null;
-						BotUtil.sendMessage(bot, message, "All questions have been answered", false, true, null);
-					}
-					finally
-					{
-						_lock.writeLock().unlock();
-					}
+					_lock.writeLock().unlock();
 				}
 			}
 		}
@@ -261,6 +316,11 @@ public class QuizHandler implements IMessageHandler
 		{
 			return (int) _participants.stream().filter(QuizParticipant::hasCorrectAnswer).count();
 		}
+		
+		public int getIncorrectAnswersCount()
+		{
+			return (int) _participants.stream().filter(QuizParticipant::hasIncorrectAnswer).count();
+		}
 	}
 	
 	static class QuizParticipant
@@ -296,6 +356,11 @@ public class QuizHandler implements IMessageHandler
 		public boolean hasCorrectAnswer()
 		{
 			return _correctAnswer;
+		}
+		
+		public boolean hasIncorrectAnswer()
+		{
+			return !_correctAnswer;
 		}
 	}
 	

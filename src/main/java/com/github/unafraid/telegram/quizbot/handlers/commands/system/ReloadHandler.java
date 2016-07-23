@@ -25,6 +25,7 @@ import org.telegram.telegrambots.api.objects.Message;
 
 import com.github.unafraid.telegram.quizbot.BotConfig;
 import com.github.unafraid.telegram.quizbot.bothandlers.ChannelBot;
+import com.github.unafraid.telegram.quizbot.data.QuizData;
 import com.github.unafraid.telegram.quizbot.database.tables.UsersTable;
 import com.github.unafraid.telegram.quizbot.handlers.commands.ICommandHandler;
 import com.github.unafraid.telegram.quizbot.util.BotUtil;
@@ -80,6 +81,12 @@ public final class ReloadHandler implements ICommandHandler
 				UsersHandler.getUsers().clear();
 				UsersHandler.getUsers().putAll(UsersTable.getUsers());
 				BotUtil.sendMessage(bot, message, "Reloaded all authorized users from database!", false, false, null);
+				break;
+			}
+			case "quiz":
+			{
+				QuizData.getInstance().load();
+				BotUtil.sendMessage(bot, message, "Reloaded all quiz data!", false, false, null);
 				break;
 			}
 			default:

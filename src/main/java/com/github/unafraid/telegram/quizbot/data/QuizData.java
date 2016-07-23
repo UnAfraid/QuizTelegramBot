@@ -45,6 +45,7 @@ public class QuizData implements IXmlReader
 	@Override
 	public void load()
 	{
+		_quizQuestions.clear();
 		parseFile(new File("config/Quiz-Questions.xml"));
 		LOGGER.info("Loaded: {} quiz questions", _quizQuestions.size());
 	}

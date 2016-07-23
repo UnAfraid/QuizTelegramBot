@@ -25,6 +25,7 @@ import org.telegram.telegrambots.api.objects.Message;
 
 import com.github.unafraid.telegram.quizbot.bothandlers.ChannelBot;
 import com.github.unafraid.telegram.quizbot.handlers.QuizHandler;
+import com.github.unafraid.telegram.quizbot.util.BotUtil;
 
 /**
  * @author UnAfraid
@@ -40,7 +41,7 @@ public class QuizCommandHandler implements ICommandHandler
 	@Override
 	public String getUsage()
 	{
-		return "/quiz <start> or <stop>";
+		return "/quiz <start> or <stop> or <skip> or <report>";
 	}
 	
 	@Override
@@ -58,6 +59,12 @@ public class QuizCommandHandler implements ICommandHandler
 	@Override
 	public void onMessage(ChannelBot bot, Message message, int updateId, List<String> args) throws TelegramApiException
 	{
+		if (args.isEmpty())
+		{
+			BotUtil.sendUsage(bot, message, this);
+			return;
+		}
+		
 		final String cmd = args.get(0);
 		switch (cmd)
 		{
@@ -69,6 +76,16 @@ public class QuizCommandHandler implements ICommandHandler
 			case "stop":
 			{
 				QuizHandler.getInstance().stopQuiz(bot, message);
+				break;
+			}
+			case "skip":
+			{
+				QuizHandler.getInstance().quizSkip(bot, message);
+				break;
+			}
+			case "report":
+			{
+				QuizHandler.getInstance().quizReport(bot, message);
 				break;
 			}
 		}
