@@ -16,51 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.github.unafraid.telegram.quizbot.database.tables.model;
+package com.github.unafraid.telegram.quizbot.handlers.commands;
+
+import org.telegram.telegrambots.TelegramApiException;
+import org.telegram.telegrambots.api.objects.Message;
+
+import com.github.unafraid.telegram.quizbot.bothandlers.ChannelBot;
 
 /**
  * @author UnAfraid
  */
-public class DBUser
+public interface IMessageHandler
 {
-	private int _id;
-	private String _name;
-	private int _level;
-	
-	public DBUser(int id, String name, int level)
+	default int getRequiredAccessLevel()
 	{
-		_id = id;
-		_name = name;
-		_level = level;
+		return 0;
 	}
 	
-	public int getId()
-	{
-		return _id;
-	}
-	
-	public void setId(int id)
-	{
-		_id = id;
-	}
-	
-	public String getName()
-	{
-		return _name;
-	}
-	
-	public void setName(String name)
-	{
-		_name = name;
-	}
-	
-	public int getLevel()
-	{
-		return _level;
-	}
-	
-	public void setLevel(int level)
-	{
-		_level = level;
-	}
+	boolean onMessage(ChannelBot bot, Message message) throws TelegramApiException;
 }

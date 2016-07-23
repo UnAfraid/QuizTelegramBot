@@ -20,7 +20,6 @@ package com.github.unafraid.telegram.quizbot.database.tables;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.unafraid.telegram.quizbot.database.tables.model.DBUser;
@@ -61,16 +60,6 @@ public class UsersTable extends AbstractDatabaseTable
 				ps.setString(3, user.getName());
 			});
 		}
-		for (Entry<String, Object> entry : user.getSettings().getSet().entrySet())
-		{
-			executeQuery("INSERT INTO user_settings (user_id, name, value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE value = ?", ps ->
-			{
-				ps.setInt(1, user.getId());
-				ps.setString(2, entry.getKey());
-				ps.setString(3, String.valueOf(entry.getValue()));
-				ps.setString(4, String.valueOf(entry.getValue()));
-			});
-		}
 	}
 	
 	public static DBUser getUser(int id)
@@ -78,12 +67,7 @@ public class UsersTable extends AbstractDatabaseTable
 		final AtomicReference<DBUser> userRef = new AtomicReference<>(null);
 		selectQuery("SELECT * FROM users WHERE id = ?", ps -> ps.setInt(1, id), rs -> userRef.set(new DBUser(rs.getInt("id"), rs.getString("name"), rs.getInt("level"))));
 		
-		final DBUser user = userRef.get();
-		if (user != null)
-		{
-			selectQuery("SELECT * FROM user_settings WHERE user_id = ?", ps -> ps.setInt(1, id), rs -> user.getSettings().set(rs.getString("name"), rs.getString("value")));
-		}
-		return user;
+		return userRef.get();
 	}
 	
 	public static Map<Integer, DBUser> getUsers()
@@ -92,7 +76,6 @@ public class UsersTable extends AbstractDatabaseTable
 		selectQuery("SELECT * FROM users", rs ->
 		{
 			final DBUser user = new DBUser(rs.getInt("id"), rs.getString("name"), rs.getInt("level"));
-			selectQuery("SELECT * FROM user_settings WHERE user_id = ?", ps -> ps.setInt(1, user.getId()), rset -> user.getSettings().set(rset.getString("name"), rset.getString("value")));
 			users.put(user.getId(), user);
 		});
 		return users;

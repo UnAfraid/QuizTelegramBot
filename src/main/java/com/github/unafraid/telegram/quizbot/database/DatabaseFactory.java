@@ -31,7 +31,7 @@ public class DatabaseFactory
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseFactory.class);
 	
-	private static DatabaseFactory _instance;
+	private static DatabaseFactory INSTANCE;
 	private ComboPooledDataSource _source;
 	
 	/**
@@ -123,12 +123,12 @@ public class DatabaseFactory
 	{
 		synchronized (DatabaseFactory.class)
 		{
-			if (_instance == null)
+			if (INSTANCE == null)
 			{
-				_instance = new DatabaseFactory();
+				INSTANCE = new DatabaseFactory();
 			}
 		}
-		return _instance;
+		return INSTANCE;
 	}
 	
 	/**

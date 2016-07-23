@@ -29,10 +29,10 @@ import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
-import com.github.unafraid.telegram.quizbot.database.tables.UsersTable;
-import com.github.unafraid.telegram.quizbot.database.tables.model.DBUser;
 import com.github.unafraid.telegram.quizbot.handlers.CommandHandler;
+import com.github.unafraid.telegram.quizbot.handlers.MessageHandler;
 import com.github.unafraid.telegram.quizbot.handlers.commands.ICommandHandler;
+import com.github.unafraid.telegram.quizbot.handlers.commands.IMessageHandler;
 import com.github.unafraid.telegram.quizbot.handlers.commands.system.UsersHandler;
 import com.github.unafraid.telegram.quizbot.util.BotUtil;
 
@@ -94,8 +94,8 @@ public class ChannelBot extends TelegramLongPollingBot
 		final Matcher matcher = COMMAND_ARGS_PATTERN.matcher(text);
 		if (matcher.find())
 		{
-			String command = matcher.group();
-			final List<String> args = new ArrayList<>();
+			final String command = matcher.group();
+			final List<String> args = new ArrayList<>(matcher.groupCount());
 			String arg;
 			
 			while (matcher.find())
@@ -117,35 +117,45 @@ public class ChannelBot extends TelegramLongPollingBot
 					final int id = message.getFrom().getId();
 					if (!UsersHandler.validate(id, handler.getRequiredAccessLevel()))
 					{
-						final DBUser user = UsersHandler.getUsers().values().stream().filter(u -> u.getName().equalsIgnoreCase(message.getFrom().getUserName())).findFirst().orElse(null);
-						if ((user != null) && (user.getId() < 10))
-						{
-							user.setId(id);
-							UsersTable.updateUser(user);
-							LOGGER.info("Updated id for : {} -> {}", user.getName(), id);
-						}
-						else
-						{
-							BotUtil.sendMessage(this, message, message.getFrom().getUserName() + ": You are not authorized to use this function!", true, false, null);
-							return;
-						}
-					}
-					else
-					{
-						final DBUser user = UsersHandler.getUser(id);
-						if (user != null)
-						{
-							final String username = message.getFrom().getUserName();
-							if ((username != null) && !username.equalsIgnoreCase(user.getName()))
-							{
-								LOGGER.info("Detected username change: {} -> {}", user.getName(), username);
-								user.setName(username);
-								UsersTable.updateUser(user);
-							}
-						}
+						BotUtil.sendMessage(this, message, message.getFrom().getUserName() + ": You are not authorized to use this function!", true, false, null);
+						return;
 					}
 					
 					handler.onMessage(this, message, updateId, args);
+				}
+				catch (Exception e)
+				{
+					LOGGER.warn("Exception caught on handler: {}, message: {}", handler.getClass().getSimpleName(), message, e);
+				}
+			}
+			else
+			{
+				for (IMessageHandler messageHandler : MessageHandler.getInstance().getHandlers())
+				{
+					try
+					{
+						if (messageHandler.onMessage(this, message))
+						{
+							break;
+						}
+					}
+					catch (Exception e)
+					{
+						LOGGER.warn("Exception caught on handler: {}, message: {}", messageHandler.getClass().getSimpleName(), message, e);
+					}
+				}
+			}
+		}
+		else
+		{
+			for (IMessageHandler handler : MessageHandler.getInstance().getHandlers())
+			{
+				try
+				{
+					if (handler.onMessage(this, message))
+					{
+						break;
+					}
 				}
 				catch (Exception e)
 				{

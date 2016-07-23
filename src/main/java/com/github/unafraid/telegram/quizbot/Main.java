@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.unafraid.telegram.quizbot.data.HandlersData;
+import com.github.unafraid.telegram.quizbot.data.QuizData;
 import com.github.unafraid.telegram.quizbot.database.DatabaseFactory;
 import com.github.unafraid.telegram.quizbot.handlers.CommandHandler;
 import com.github.unafraid.telegram.quizbot.util.ThreadPoolManager;
@@ -52,6 +53,7 @@ public final class Main extends Thread
 		ThreadPoolManager.init();
 		CommandHandler.getInstance();
 		HandlersData.getInstance();
+		QuizData.getInstance();
 		BotManager.getInstance();
 		DatabaseFactory.getInstance();
 		ShutdownThread.init();

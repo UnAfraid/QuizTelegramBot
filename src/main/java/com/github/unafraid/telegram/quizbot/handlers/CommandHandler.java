@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.github.unafraid.telegram.quizbot.handlers.commands.HelpHandler;
 import com.github.unafraid.telegram.quizbot.handlers.commands.ICommandHandler;
+import com.github.unafraid.telegram.quizbot.handlers.commands.QuizCommandHandler;
 import com.github.unafraid.telegram.quizbot.handlers.commands.StartHandler;
 import com.github.unafraid.telegram.quizbot.handlers.commands.system.ReloadHandler;
 import com.github.unafraid.telegram.quizbot.handlers.commands.system.ResolveHandler;
@@ -52,6 +53,9 @@ public final class CommandHandler
 		addHandler(new RestartHandler());
 		addHandler(new ShutdownHandler());
 		addHandler(new WhoAmI());
+		
+		// Quiz
+		addHandler(new QuizCommandHandler());
 	}
 	
 	public void addHandler(ICommandHandler handler)
@@ -71,11 +75,11 @@ public final class CommandHandler
 	
 	public static CommandHandler getInstance()
 	{
-		return SingletonHolder._instance;
+		return SingletonHolder.INSTANCE;
 	}
 	
 	private static class SingletonHolder
 	{
-		protected static final CommandHandler _instance = new CommandHandler();
+		protected static final CommandHandler INSTANCE = new CommandHandler();
 	}
 }

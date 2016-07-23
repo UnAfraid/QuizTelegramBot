@@ -16,51 +16,42 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.github.unafraid.telegram.quizbot.database.tables.model;
+package com.github.unafraid.telegram.quizbot.handlers;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.github.unafraid.telegram.quizbot.handlers.commands.IMessageHandler;
 
 /**
  * @author UnAfraid
  */
-public class DBUser
+public final class MessageHandler
 {
-	private int _id;
-	private String _name;
-	private int _level;
+	private final List<IMessageHandler> _handlers = new ArrayList<>();
 	
-	public DBUser(int id, String name, int level)
+	protected MessageHandler()
 	{
-		_id = id;
-		_name = name;
-		_level = level;
+		addHandler(QuizHandler.getInstance());
 	}
 	
-	public int getId()
+	public void addHandler(IMessageHandler handler)
 	{
-		return _id;
+		_handlers.add(handler);
 	}
 	
-	public void setId(int id)
+	public List<IMessageHandler> getHandlers()
 	{
-		_id = id;
+		return _handlers;
 	}
 	
-	public String getName()
+	public static MessageHandler getInstance()
 	{
-		return _name;
+		return SingletonHolder.INSTANCE;
 	}
 	
-	public void setName(String name)
+	private static class SingletonHolder
 	{
-		_name = name;
-	}
-	
-	public int getLevel()
-	{
-		return _level;
-	}
-	
-	public void setLevel(int level)
-	{
-		_level = level;
+		protected static final MessageHandler INSTANCE = new MessageHandler();
 	}
 }
