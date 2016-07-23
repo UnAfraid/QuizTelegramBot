@@ -19,11 +19,16 @@
 package com.github.unafraid.telegram.quizbot.handlers;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.StringJoiner;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Stream;
 
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.objects.Message;
@@ -138,13 +143,19 @@ public class QuizHandler implements IMessageHandler
 			final boolean maxIncorrectReached = activeQuestion.getIncorrectAnswersCount() >= activeQuestion.getQuestion().getMaxIncorrectAnswers();
 			final boolean maxCorrectReached = activeQuestion.getCorrectAnswersCount() >= activeQuestion.getQuestion().getCorrectAnswersCount();
 			
-			sj.add("Question: " + activeQuestion.getQuestion().getQuestion());
+			sj.add("Question: *\"" + activeQuestion.getQuestion().getQuestion() + "\"*");
 			sj.add("   | Answered: " + (maxCorrectReached ? "✅" : maxIncorrectReached ? "🅾" : "🖍"));
-			for (QuizParticipant participant : activeQuestion.getParticipants())
+			for (QuizParticipant participant : activeQuestion.getParticipants().values())
 			{
-				sj.add("   | Participant: @" + participant.getUsername() + " answered correctly: " + (participant.hasCorrectAnswer() ? "✅" : "🅾"));
+				final StringBuilder sb = new StringBuilder();
+				for (QuizAnswer answer : participant.getAnswers())
+				{
+					sb.append(" *\"").append(answer.getAnswer()).append("\"* correct: ").append(answer.isCorrect() ? "✅" : "🅾").append(",");
+				}
+				final String answers = sb.substring(0, sb.length() - 1);
+				sj.add("   | Participant: @" + participant.getUsername() + " answered: " + answers);
 			}
-			sj.add("-------------------------------------------");
+			sj.add("-------------------------------------------------------------------------------------------------");
 		}
 		
 		BotUtil.sendMessage(bot, message, sj.toString(), true, true, null);
@@ -168,13 +179,13 @@ public class QuizHandler implements IMessageHandler
 				if (answer.getAnswer().equalsIgnoreCase(message.getText()))
 				{
 					// Verify if participant already 'participated'
-					if (activeQuestion.hasParticipated(message.getFrom().getId()))
+					final QuizParticipant participant = activeQuestion.getParticipant(message.getFrom().getId());
+					if ((participant == null) || (participant.getAnswers().size() < activeQuestion.getQuestion().getMaxAnswersPerPerson()))
 					{
-						return false;
+						onQuestionAnswered(activeQuestion, answer, bot, message);
+						return true;
 					}
-					
-					onQuestionAnswered(activeQuestion, answer, bot, message);
-					return true;
+					return false;
 				}
 			}
 		}
@@ -191,6 +202,13 @@ public class QuizHandler implements IMessageHandler
 		}
 		sj.add("There are " + nextQuestion.getCorrectAnswersCount() + " correct answers");
 		
+		final ReplyKeyboardMarkup markup = getKeyboardMarkup(nextQuestion);
+		
+		BotUtil.sendMessage(bot, message, sj.toString(), false, true, markup);
+	}
+	
+	private ReplyKeyboardMarkup getKeyboardMarkup(QuizQuestion nextQuestion)
+	{
 		final ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup();
 		markup.setOneTimeKeyboad(true);
 		for (QuizAnswer answer : nextQuestion.getAnswers())
@@ -207,8 +225,7 @@ public class QuizHandler implements IMessageHandler
 			}
 			row.add(new KeyboardButton(answer.getAnswer()));
 		}
-		
-		BotUtil.sendMessage(bot, message, sj.toString(), false, true, markup);
+		return markup;
 	}
 	
 	private void onQuestionAnswered(QuizActiveQuestion activeQuestion, QuizAnswer answer, ChannelBot bot, Message message) throws TelegramApiException
@@ -216,10 +233,11 @@ public class QuizHandler implements IMessageHandler
 		final User from = message.getFrom();
 		
 		// Register participants's answer
-		activeQuestion.addParticipant(new QuizParticipant(from.getId(), from.getFirstName(), from.getUserName(), answer.isCorrect()));
+		QuizParticipant participant = activeQuestion.getOrCreateParticipant(from.getId(), from.getFirstName(), from.getUserName());
+		participant.addAnswer(answer);
 		
 		// Announce if participant's answer is correct or incorrect
-		BotUtil.sendMessage(bot, message, "The following answer: " + message.getText() + " is " + (answer.isCorrect() ? "✅ Correct!" : "🅾 Incorrect!"), true, true, null);
+		BotUtil.sendMessage(bot, message, "The following answer: " + message.getText() + " is " + (answer.isCorrect() ? "✅ Correct!" : "🅾 Incorrect!"), true, true, getKeyboardMarkup(activeQuestion.getQuestion()));
 		
 		// Verify if all necessary answers were provided and proceed to next question
 		final boolean maxIncorrectReached = activeQuestion.getIncorrectAnswersCount() >= activeQuestion.getQuestion().getMaxIncorrectAnswers();
@@ -285,7 +303,7 @@ public class QuizHandler implements IMessageHandler
 	static class QuizActiveQuestion
 	{
 		private final QuizQuestion _question;
-		private final List<QuizParticipant> _participants = new ArrayList<>();
+		private final Map<Integer, QuizParticipant> _participants = new ConcurrentHashMap<>();
 		
 		public QuizActiveQuestion(QuizQuestion question)
 		{
@@ -297,29 +315,29 @@ public class QuizHandler implements IMessageHandler
 			return _question;
 		}
 		
-		public List<QuizParticipant> getParticipants()
+		public Map<Integer, QuizParticipant> getParticipants()
 		{
 			return _participants;
 		}
 		
-		public void addParticipant(QuizParticipant participant)
+		public QuizParticipant getOrCreateParticipant(int id, String name, String username)
 		{
-			_participants.add(participant);
+			return _participants.computeIfAbsent(id, key -> new QuizParticipant(id, name, username));
 		}
 		
-		public boolean hasParticipated(int userId)
+		public QuizParticipant getParticipant(int id)
 		{
-			return _participants.stream().anyMatch(participant -> participant.getId() == userId);
+			return _participants.get(id);
 		}
 		
 		public int getCorrectAnswersCount()
 		{
-			return (int) _participants.stream().filter(QuizParticipant::hasCorrectAnswer).count();
+			return (int) _participants.values().stream().flatMap(QuizParticipant::getAnswersStream).distinct().filter(QuizAnswer::isCorrect).count();
 		}
 		
 		public int getIncorrectAnswersCount()
 		{
-			return (int) _participants.stream().filter(QuizParticipant::hasIncorrectAnswer).count();
+			return (int) _participants.values().stream().flatMap(QuizParticipant::getAnswersStream).distinct().filter(QuizAnswer::isIncorrect).count();
 		}
 	}
 	
@@ -328,14 +346,13 @@ public class QuizHandler implements IMessageHandler
 		private final int _id;
 		private final String _name;
 		private final String _username;
-		private final boolean _correctAnswer;
+		private final Set<QuizAnswer> _answers = new LinkedHashSet<>();
 		
-		public QuizParticipant(int id, String name, String username, boolean correctAnswer)
+		public QuizParticipant(int id, String name, String username)
 		{
 			_id = id;
 			_name = name;
 			_username = username;
-			_correctAnswer = correctAnswer;
 		}
 		
 		public int getId()
@@ -353,14 +370,29 @@ public class QuizHandler implements IMessageHandler
 			return _username;
 		}
 		
+		public Set<QuizAnswer> getAnswers()
+		{
+			return _answers;
+		}
+		
+		public Stream<QuizAnswer> getAnswersStream()
+		{
+			return _answers.stream();
+		}
+		
+		public void addAnswer(QuizAnswer answer)
+		{
+			_answers.add(answer);
+		}
+		
 		public boolean hasCorrectAnswer()
 		{
-			return _correctAnswer;
+			return _answers.stream().anyMatch(QuizAnswer::isCorrect);
 		}
 		
 		public boolean hasIncorrectAnswer()
 		{
-			return !_correctAnswer;
+			return !_answers.stream().anyMatch(QuizAnswer::isCorrect);
 		}
 	}
 	

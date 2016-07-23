@@ -75,6 +75,7 @@ public class QuizData implements IXmlReader
 	{
 		private final String _question;
 		private final int _answersPerRow;
+		private final int _maxAnswersPerPerson;
 		private final int _maxIncorrectAnswers;
 		private final List<QuizAnswer> _answers = new ArrayList<>();
 		
@@ -82,6 +83,7 @@ public class QuizData implements IXmlReader
 		{
 			_question = set.getString("text");
 			_answersPerRow = set.getInt("answersPerRow", 3);
+			_maxAnswersPerPerson = set.getInt("maxAnswersPerPerson", 1);
 			_maxIncorrectAnswers = set.getInt("maxIncorrectAnswers", Integer.MAX_VALUE);
 		}
 		
@@ -93,6 +95,11 @@ public class QuizData implements IXmlReader
 		public int getAnswersPerRow()
 		{
 			return _answersPerRow;
+		}
+		
+		public int getMaxAnswersPerPerson()
+		{
+			return _maxAnswersPerPerson;
 		}
 		
 		public int getMaxIncorrectAnswers()
@@ -135,6 +142,11 @@ public class QuizData implements IXmlReader
 		public boolean isCorrect()
 		{
 			return _correct;
+		}
+		
+		public boolean isIncorrect()
+		{
+			return !_correct;
 		}
 	}
 	

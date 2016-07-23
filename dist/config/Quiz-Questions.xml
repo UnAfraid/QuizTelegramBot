@@ -13,4 +13,11 @@
 		<answer>E</answer>
 		<answer>F</answer>
 	</question>
+	
+	<question text="What is that https://media.giphy.com/media/l0OWistc2HUjf6PKM/giphy.gif" maxAnswersPerPerson="2" maxIncorrectAnswers="2" answersPerRow="3">
+		<answer correct="true">Dog</answer>
+		<answer correct="true">Wanna-be dog</answer>
+		<answer>Some fluffy animal</answer>
+		<answer>Pokemon</answer>
+	</question>
 </list>
