@@ -134,6 +134,12 @@ public class ChannelBot extends TelegramLongPollingBot
 				{
 					try
 					{
+						final int id = message.getFrom().getId();
+						if (!UsersHandler.validate(id, messageHandler.getRequiredAccessLevel()))
+						{
+							continue;
+						}
+						
 						if (messageHandler.onMessage(this, message))
 						{
 							break;
@@ -152,6 +158,12 @@ public class ChannelBot extends TelegramLongPollingBot
 			{
 				try
 				{
+					final int id = message.getFrom().getId();
+					if (!UsersHandler.validate(id, handler.getRequiredAccessLevel()))
+					{
+						continue;
+					}
+					
 					if (handler.onMessage(this, message))
 					{
 						break;
