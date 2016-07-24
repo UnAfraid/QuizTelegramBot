@@ -5,7 +5,7 @@
 #  2 reboot attempt
 
 while :; do
-	java  -Xms512m -Xmx1024m -jar TelegramBot.jar > /dev/null 2>&1
+	java -jar TelegramBot.jar > /dev/null 2>&1
 	[ $? -ne 2 ] && break
 	sleep 10
 done

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.github.unafraid.telegram.quizbot.handlers.commands.system;
+package com.github.unafraid.telegram.quizbot.handlers;
 
 import java.util.List;
 
@@ -24,43 +24,22 @@ import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.objects.Message;
 
 import com.github.unafraid.telegram.quizbot.bothandlers.ChannelBot;
-import com.github.unafraid.telegram.quizbot.handlers.commands.ICommandHandler;
-import com.github.unafraid.telegram.quizbot.util.BotUtil;
 
 /**
  * @author UnAfraid
  */
-public final class ShutdownHandler implements ICommandHandler
+public interface ICommandHandler
 {
-	@Override
-	public String getCommand()
+	String getCommand();
+	
+	String getUsage();
+	
+	String getDescription();
+	
+	default int getRequiredAccessLevel()
 	{
-		return "/shutdown";
+		return 0;
 	}
 	
-	@Override
-	public String getUsage()
-	{
-		return "/shutdown";
-	}
-	
-	@Override
-	public String getDescription()
-	{
-		return "Shutting down the bot";
-	}
-	
-	@Override
-	public int getRequiredAccessLevel()
-	{
-		return 8;
-	}
-	
-	@Override
-	public void onMessage(ChannelBot bot, Message message, int updateId, List<String> args) throws TelegramApiException
-	{
-		BotUtil.sendMessage(bot, message, "Okay i am shutting down! :(", false, false, null);
-		// bot.getUpdates(updateId + 1, 1, 0); // Force this update as received
-		Runtime.getRuntime().halt(0);
-	}
+	void onMessage(ChannelBot bot, Message message, int updateId, List<String> args) throws TelegramApiException;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2015 L2J Unity
+ * Copyright (C) 2004-2016 L2J Unity
  * 
  * This file is part of L2J Unity.
  * 
@@ -16,40 +16,64 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.github.unafraid.telegram.quizbot.handlers;
+package com.github.unafraid.telegram.quizbot.database.dao.users;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author UnAfraid
  */
-public final class MessageHandler
+public class UsersFactory implements IUsersDAO
 {
-	private final List<IMessageHandler> _handlers = new ArrayList<>();
+	private final IUsersDAO _impl = new UsersDAOMySQLImpl();
 	
-	protected MessageHandler()
+	protected UsersFactory()
 	{
-		addHandler(QuizHandler.getInstance());
 	}
 	
-	public void addHandler(IMessageHandler handler)
+	@Override
+	public boolean create(DBUser user)
 	{
-		_handlers.add(handler);
+		return _impl.create(user);
 	}
 	
-	public List<IMessageHandler> getHandlers()
+	@Override
+	public boolean update(DBUser user)
 	{
-		return _handlers;
+		return _impl.update(user);
 	}
 	
-	public static MessageHandler getInstance()
+	@Override
+	public boolean delete(DBUser user)
+	{
+		return _impl.delete(user);
+	}
+	
+	@Override
+	public DBUser findById(int id)
+	{
+		return _impl.findById(id);
+	}
+	
+	@Override
+	public DBUser findByUsername(String username)
+	{
+		return _impl.findByUsername(username);
+	}
+	
+	@Override
+	public List<DBUser> findAll()
+	{
+		return _impl.findAll();
+	}
+	
+	public static UsersFactory getInstance()
 	{
 		return SingletonHolder.INSTANCE;
 	}
 	
 	private static class SingletonHolder
 	{
-		protected static final MessageHandler INSTANCE = new MessageHandler();
+		protected static final UsersFactory INSTANCE = new UsersFactory();
 	}
 }

@@ -16,12 +16,14 @@ package com.github.unafraid.telegram.quizbot.database;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.unafraid.telegram.quizbot.BotConfig;
-import com.github.unafraid.telegram.quizbot.util.ThreadPoolManager;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 /**
@@ -31,6 +33,7 @@ public class DatabaseFactory
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseFactory.class);
 	
+	private static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor();
 	private static DatabaseFactory INSTANCE;
 	private ComboPooledDataSource _source;
 	
@@ -143,7 +146,7 @@ public class DatabaseFactory
 			try
 			{
 				con = _source.getConnection();
-				ThreadPoolManager.getInstance().schedule(new ConnectionCloser(con, new RuntimeException()), BotConfig.CONNECTION_CLOSE_TIME);
+				EXECUTOR.schedule(new ConnectionCloser(con, new RuntimeException()), BotConfig.CONNECTION_CLOSE_TIME, TimeUnit.MILLISECONDS);
 			}
 			catch (SQLException e)
 			{

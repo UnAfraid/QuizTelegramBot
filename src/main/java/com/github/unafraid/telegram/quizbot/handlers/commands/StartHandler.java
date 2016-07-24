@@ -24,6 +24,7 @@ import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.objects.Message;
 
 import com.github.unafraid.telegram.quizbot.bothandlers.ChannelBot;
+import com.github.unafraid.telegram.quizbot.handlers.ICommandHandler;
 import com.github.unafraid.telegram.quizbot.util.BotUtil;
 
 /**

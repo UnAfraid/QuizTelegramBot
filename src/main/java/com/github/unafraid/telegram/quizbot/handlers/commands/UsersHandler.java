@@ -16,19 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.github.unafraid.telegram.quizbot.handlers.commands.system;
+package com.github.unafraid.telegram.quizbot.handlers.commands;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.objects.Message;
 
 import com.github.unafraid.telegram.quizbot.bothandlers.ChannelBot;
-import com.github.unafraid.telegram.quizbot.database.tables.UsersTable;
-import com.github.unafraid.telegram.quizbot.database.tables.model.DBUser;
-import com.github.unafraid.telegram.quizbot.handlers.commands.ICommandHandler;
+import com.github.unafraid.telegram.quizbot.database.dao.users.DBUser;
+import com.github.unafraid.telegram.quizbot.database.dao.users.UsersFactory;
+import com.github.unafraid.telegram.quizbot.handlers.ICommandHandler;
 import com.github.unafraid.telegram.quizbot.util.BotUtil;
 
 /**
@@ -36,11 +34,8 @@ import com.github.unafraid.telegram.quizbot.util.BotUtil;
  */
 public final class UsersHandler implements ICommandHandler
 {
-	private static final Map<Integer, DBUser> USERS = new LinkedHashMap<>();
-	
 	public UsersHandler()
 	{
-		USERS.putAll(UsersTable.getUsers());
 	}
 	
 	@Override
@@ -105,15 +100,14 @@ public final class UsersHandler implements ICommandHandler
 					return;
 				}
 				
-				if (getUsers().containsKey(id))
+				if (UsersFactory.getInstance().findById(id) != null)
 				{
 					BotUtil.sendMessage(bot, message, username + " is already authorized use \"/users changeLevel\" instead!", false, false, null);
 					break;
 				}
 				
 				final DBUser user = new DBUser(id, username, level);
-				UsersTable.addUser(user);
-				getUsers().put(user.getId(), user);
+				UsersFactory.getInstance().create(user);
 				BotUtil.sendMessage(bot, message, username + " is now authorized!", true, false, null);
 				break;
 			}
@@ -139,7 +133,7 @@ public final class UsersHandler implements ICommandHandler
 					return;
 				}
 				
-				final DBUser user = getUsers().get(id);
+				final DBUser user = UsersFactory.getInstance().findById(id);
 				if (user == null)
 				{
 					BotUtil.sendMessage(bot, message, "There is no user with such id", false, false, null);
@@ -147,7 +141,7 @@ public final class UsersHandler implements ICommandHandler
 				}
 				
 				user.setLevel(level);
-				UsersTable.updateUser(user);
+				UsersFactory.getInstance().update(user);
 				BotUtil.sendMessage(bot, message, user.getName() + " has been updated!", false, false, null);
 				break;
 			}
@@ -166,14 +160,13 @@ public final class UsersHandler implements ICommandHandler
 					return;
 				}
 				
-				final DBUser user = getUsers().get(id);
+				final DBUser user = UsersFactory.getInstance().findById(id);
 				if (user == null)
 				{
 					BotUtil.sendMessage(bot, message, "There is no user with such id", false, false, null);
 					break;
 				}
-				UsersTable.removeUser(user);
-				getUsers().remove(user.getId());
+				UsersFactory.getInstance().delete(user);
 				BotUtil.sendMessage(bot, message, user.getName() + " is no longer authorized!", true, false, null);
 				break;
 			}
@@ -181,45 +174,11 @@ public final class UsersHandler implements ICommandHandler
 			{
 				final StringBuilder sb = new StringBuilder();
 				sb.append("Authorized users:").append(System.lineSeparator());
-				for (DBUser user : getUsers().values())
+				for (DBUser user : UsersFactory.getInstance().findAll())
 				{
 					sb.append(" - ").append(user.getId()).append(" @").append(user.getName()).append(" level: ").append(user.getLevel()).append(System.lineSeparator());
 				}
 				BotUtil.sendMessage(bot, message, sb.toString(), true, false, null);
-				break;
-			}
-			case "reload":
-			{
-				getUsers().clear();
-				getUsers().putAll(UsersTable.getUsers());
-				BotUtil.sendMessage(bot, message, "Reloaded all users from database!", false, false, null);
-				break;
-			}
-			case "set_id":
-			{
-				if (args.size() < 3)
-				{
-					BotUtil.sendMessage(bot, message, "/users set_id <name> <id>", false, false, null);
-					return;
-				}
-				
-				final String name = args.get(1);
-				final int id = BotUtil.parseInt(args.get(2), -1);
-				if (id == -1)
-				{
-					BotUtil.sendMessage(bot, message, "invalid id specified", false, false, null);
-					return;
-				}
-				
-				final DBUser user = getUsers().values().stream().filter(u -> u.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
-				if (user == null)
-				{
-					BotUtil.sendMessage(bot, message, "There is no user with such name", false, false, null);
-					return;
-				}
-				user.setId(id);
-				UsersTable.updateUser(user);
-				BotUtil.sendMessage(bot, message, "Updated id for user: " + user.getName(), false, false, null);
 				break;
 			}
 			default:
@@ -232,17 +191,12 @@ public final class UsersHandler implements ICommandHandler
 	
 	public static boolean validate(int id, int level)
 	{
-		final DBUser user = USERS.get(id);
-		return (level == 0) || ((user != null) && (user.getLevel() >= level));
-	}
-	
-	public static Map<Integer, DBUser> getUsers()
-	{
-		return USERS;
-	}
-	
-	public static DBUser getUser(int id)
-	{
-		return USERS.get(id);
+		if (level == 0)
+		{
+			return true;
+		}
+		
+		final DBUser user = UsersFactory.getInstance().findById(id);
+		return (user != null) && (user.getLevel() >= level);
 	}
 }

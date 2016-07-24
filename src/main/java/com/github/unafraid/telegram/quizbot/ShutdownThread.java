@@ -21,8 +21,6 @@ package com.github.unafraid.telegram.quizbot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.unafraid.telegram.quizbot.util.ThreadPoolManager;
-
 /**
  * @author UnAfraid
  */
@@ -40,7 +38,6 @@ public final class ShutdownThread extends Thread
 	{
 		LOGGER.info("Shutting down..");
 		BotManager.getInstance().shutdown();
-		ThreadPoolManager.getInstance().shutdown();
 	}
 	
 	public static void init()

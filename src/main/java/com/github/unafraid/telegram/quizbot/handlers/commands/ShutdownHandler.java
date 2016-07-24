@@ -16,59 +16,51 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.github.unafraid.telegram.quizbot.handlers.commands.system;
+package com.github.unafraid.telegram.quizbot.handlers.commands;
 
-import java.net.InetAddress;
 import java.util.List;
 
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.objects.Message;
 
 import com.github.unafraid.telegram.quizbot.bothandlers.ChannelBot;
-import com.github.unafraid.telegram.quizbot.handlers.commands.ICommandHandler;
+import com.github.unafraid.telegram.quizbot.handlers.ICommandHandler;
 import com.github.unafraid.telegram.quizbot.util.BotUtil;
 
 /**
  * @author UnAfraid
  */
-public final class ResolveHandler implements ICommandHandler
+public final class ShutdownHandler implements ICommandHandler
 {
 	@Override
 	public String getCommand()
 	{
-		return "/resolve";
+		return "/shutdown";
 	}
 	
 	@Override
 	public String getUsage()
 	{
-		return "/resolve <host>";
+		return "/shutdown";
 	}
 	
 	@Override
 	public String getDescription()
 	{
-		return "Resolved hostname to ip address";
+		return "Shutting down the bot";
+	}
+	
+	@Override
+	public int getRequiredAccessLevel()
+	{
+		return 8;
 	}
 	
 	@Override
 	public void onMessage(ChannelBot bot, Message message, int updateId, List<String> args) throws TelegramApiException
 	{
-		if (args.isEmpty())
-		{
-			BotUtil.sendUsage(bot, message, this);
-			return;
-		}
-		
-		final String hostName = args.get(0);
-		try
-		{
-			InetAddress addr = InetAddress.getByName(hostName);
-			BotUtil.sendMessage(bot, message, "*" + hostName + "* = " + addr.getHostAddress(), true, true, null);
-		}
-		catch (Exception e)
-		{
-			BotUtil.sendMessage(bot, message, "Failed to resolve: " + hostName + " " + e.getMessage(), true, false, null);
-		}
+		BotUtil.sendMessage(bot, message, "Okay i am shutting down! :(", false, false, null);
+		// bot.getUpdates(updateId + 1, 1, 0); // Force this update as received
+		Runtime.getRuntime().halt(0);
 	}
 }

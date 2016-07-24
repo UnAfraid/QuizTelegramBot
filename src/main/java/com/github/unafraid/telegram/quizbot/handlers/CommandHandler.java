@@ -23,15 +23,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.github.unafraid.telegram.quizbot.handlers.commands.HelpHandler;
-import com.github.unafraid.telegram.quizbot.handlers.commands.ICommandHandler;
 import com.github.unafraid.telegram.quizbot.handlers.commands.QuizCommandHandler;
+import com.github.unafraid.telegram.quizbot.handlers.commands.ReloadHandler;
+import com.github.unafraid.telegram.quizbot.handlers.commands.ResolveHandler;
+import com.github.unafraid.telegram.quizbot.handlers.commands.RestartHandler;
+import com.github.unafraid.telegram.quizbot.handlers.commands.ShutdownHandler;
 import com.github.unafraid.telegram.quizbot.handlers.commands.StartHandler;
-import com.github.unafraid.telegram.quizbot.handlers.commands.system.ReloadHandler;
-import com.github.unafraid.telegram.quizbot.handlers.commands.system.ResolveHandler;
-import com.github.unafraid.telegram.quizbot.handlers.commands.system.RestartHandler;
-import com.github.unafraid.telegram.quizbot.handlers.commands.system.ShutdownHandler;
-import com.github.unafraid.telegram.quizbot.handlers.commands.system.UsersHandler;
-import com.github.unafraid.telegram.quizbot.handlers.commands.system.WhoAmI;
+import com.github.unafraid.telegram.quizbot.handlers.commands.UsersHandler;
+import com.github.unafraid.telegram.quizbot.handlers.commands.WhoAmI;
 
 /**
  * @author UnAfraid

@@ -16,47 +16,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.github.unafraid.telegram.quizbot.handlers.commands.system;
+package com.github.unafraid.telegram.quizbot.handlers.commands;
 
+import java.net.InetAddress;
 import java.util.List;
 
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.objects.Message;
 
-import com.github.unafraid.telegram.quizbot.BotConfig;
 import com.github.unafraid.telegram.quizbot.bothandlers.ChannelBot;
-import com.github.unafraid.telegram.quizbot.data.QuizData;
-import com.github.unafraid.telegram.quizbot.database.tables.UsersTable;
-import com.github.unafraid.telegram.quizbot.handlers.commands.ICommandHandler;
+import com.github.unafraid.telegram.quizbot.handlers.ICommandHandler;
 import com.github.unafraid.telegram.quizbot.util.BotUtil;
 
 /**
  * @author UnAfraid
  */
-public final class ReloadHandler implements ICommandHandler
+public final class ResolveHandler implements ICommandHandler
 {
 	@Override
 	public String getCommand()
 	{
-		return "/reload";
+		return "/resolve";
 	}
 	
 	@Override
 	public String getUsage()
 	{
-		return "/reload <config|authorizedUsers>";
+		return "/resolve <host>";
 	}
 	
 	@Override
 	public String getDescription()
 	{
-		return "Reloads bot configuration";
-	}
-	
-	@Override
-	public int getRequiredAccessLevel()
-	{
-		return 5;
+		return "Resolved hostname to ip address";
 	}
 	
 	@Override
@@ -68,32 +60,15 @@ public final class ReloadHandler implements ICommandHandler
 			return;
 		}
 		
-		switch (args.get(0))
+		final String hostName = args.get(0);
+		try
 		{
-			case "config":
-			{
-				BotConfig.load();
-				BotUtil.sendMessage(bot, message, "Reloaded configuration successfully!", true, false, null);
-				break;
-			}
-			case "users":
-			{
-				UsersHandler.getUsers().clear();
-				UsersHandler.getUsers().putAll(UsersTable.getUsers());
-				BotUtil.sendMessage(bot, message, "Reloaded all authorized users from database!", false, false, null);
-				break;
-			}
-			case "quiz":
-			{
-				QuizData.getInstance().load();
-				BotUtil.sendMessage(bot, message, "Reloaded all quiz data!", false, false, null);
-				break;
-			}
-			default:
-			{
-				BotUtil.sendUsage(bot, message, this);
-				break;
-			}
+			InetAddress addr = InetAddress.getByName(hostName);
+			BotUtil.sendMessage(bot, message, "*" + hostName + "* = " + addr.getHostAddress(), true, true, null);
+		}
+		catch (Exception e)
+		{
+			BotUtil.sendMessage(bot, message, "Failed to resolve: " + hostName + " " + e.getMessage(), true, false, null);
 		}
 	}
 }

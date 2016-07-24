@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2015 L2J Unity
+ * Copyright (C) 2004-2016 L2J Unity
  * 
  * This file is part of L2J Unity.
  * 
@@ -16,30 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.github.unafraid.telegram.quizbot.handlers.commands;
+package com.github.unafraid.telegram.quizbot.database.dao.users;
 
 import java.util.List;
-
-import org.telegram.telegrambots.TelegramApiException;
-import org.telegram.telegrambots.api.objects.Message;
-
-import com.github.unafraid.telegram.quizbot.bothandlers.ChannelBot;
 
 /**
  * @author UnAfraid
  */
-public interface ICommandHandler
+public interface IUsersDAO
 {
-	String getCommand();
+	public boolean create(DBUser user);
 	
-	String getUsage();
+	public boolean update(DBUser user);
 	
-	String getDescription();
+	public boolean delete(DBUser user);
 	
-	default int getRequiredAccessLevel()
-	{
-		return 0;
-	}
+	public DBUser findById(int id);
 	
-	void onMessage(ChannelBot bot, Message message, int updateId, List<String> args) throws TelegramApiException;
+	public DBUser findByUsername(String username);
+	
+	public List<DBUser> findAll();
 }

@@ -5,7 +5,7 @@ title Telegram Bot Console
 echo Telegram Bot
 echo.
 
-java  -Xms512m -Xmx1024m -jar TelegramBot.jar
+java -jar TelegramBot.jar
 
 if ERRORLEVEL 2 goto restart
 if ERRORLEVEL 1 goto error

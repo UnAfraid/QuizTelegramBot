@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.github.unafraid.telegram.quizbot.handlers.commands.system;
+package com.github.unafraid.telegram.quizbot.handlers.commands;
 
 import java.util.List;
 
@@ -24,43 +24,48 @@ import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.objects.Message;
 
 import com.github.unafraid.telegram.quizbot.bothandlers.ChannelBot;
-import com.github.unafraid.telegram.quizbot.handlers.commands.ICommandHandler;
+import com.github.unafraid.telegram.quizbot.handlers.ICommandHandler;
 import com.github.unafraid.telegram.quizbot.util.BotUtil;
 
 /**
  * @author UnAfraid
  */
-public final class RestartHandler implements ICommandHandler
+public final class WhoAmI implements ICommandHandler
 {
 	@Override
 	public String getCommand()
 	{
-		return "/restart";
+		return "/whoami";
 	}
 	
 	@Override
 	public String getUsage()
 	{
-		return "/restart";
+		return "/whoami";
 	}
 	
 	@Override
 	public String getDescription()
 	{
-		return "Restarting the bot";
-	}
-	
-	@Override
-	public int getRequiredAccessLevel()
-	{
-		return 5;
+		return "Shows information for the user who types the command";
 	}
 	
 	@Override
 	public void onMessage(ChannelBot bot, Message message, int updateId, List<String> args) throws TelegramApiException
 	{
-		BotUtil.sendMessage(bot, message, "Okay i am restarting! :(", false, false, null);
-		// bot.getUpdates(updateId + 1, 1, 0); // Force this update as received
-		Runtime.getRuntime().halt(2);
+		final StringBuilder sb = new StringBuilder();
+		sb.append("Your id: ").append(message.getFrom().getId()).append(System.lineSeparator());
+		sb.append("Name: ").append(message.getFrom().getFirstName()).append(System.lineSeparator());
+		if (message.getFrom().getUserName() != null)
+		{
+			sb.append("Username: @").append(message.getFrom().getUserName()).append(System.lineSeparator());
+		}
+		sb.append("Chat Type: ").append(message.getChat().isGroupChat() ? "Group Chat" : message.getChat().isSuperGroupChat() ? "Super Group Chat" : message.getChat().isChannelChat() ? "Channel Chat" : message.getChat().isUserChat() ? "User Chat" : "No way!?").append(System.lineSeparator());
+		if (message.getChat().getId() < 0)
+		{
+			sb.append("Group Id: ").append(message.getChat().getId()).append(System.lineSeparator());
+			sb.append("Group Name: ").append(message.getChat().getTitle()).append(System.lineSeparator());
+		}
+		BotUtil.sendMessage(bot, message, sb.toString(), true, false, null);
 	}
 }

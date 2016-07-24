@@ -42,7 +42,6 @@ import com.github.unafraid.telegram.quizbot.bothandlers.ChannelBot;
 import com.github.unafraid.telegram.quizbot.data.QuizData;
 import com.github.unafraid.telegram.quizbot.data.QuizData.QuizAnswer;
 import com.github.unafraid.telegram.quizbot.data.QuizData.QuizQuestion;
-import com.github.unafraid.telegram.quizbot.handlers.commands.IMessageHandler;
 import com.github.unafraid.telegram.quizbot.util.BotUtil;
 
 /**

@@ -30,10 +30,10 @@ import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
 import com.github.unafraid.telegram.quizbot.handlers.CommandHandler;
+import com.github.unafraid.telegram.quizbot.handlers.ICommandHandler;
+import com.github.unafraid.telegram.quizbot.handlers.IMessageHandler;
 import com.github.unafraid.telegram.quizbot.handlers.MessageHandler;
-import com.github.unafraid.telegram.quizbot.handlers.commands.ICommandHandler;
-import com.github.unafraid.telegram.quizbot.handlers.commands.IMessageHandler;
-import com.github.unafraid.telegram.quizbot.handlers.commands.system.UsersHandler;
+import com.github.unafraid.telegram.quizbot.handlers.commands.UsersHandler;
 import com.github.unafraid.telegram.quizbot.util.BotUtil;
 
 /**

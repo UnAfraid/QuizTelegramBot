@@ -34,7 +34,6 @@ import com.github.unafraid.telegram.quizbot.data.HandlersData;
 import com.github.unafraid.telegram.quizbot.data.QuizData;
 import com.github.unafraid.telegram.quizbot.database.DatabaseFactory;
 import com.github.unafraid.telegram.quizbot.handlers.CommandHandler;
-import com.github.unafraid.telegram.quizbot.util.ThreadPoolManager;
 
 import sun.management.VMManagement;
 
@@ -50,7 +49,6 @@ public final class Main extends Thread
 		writePID();
 		
 		BotConfig.load();
-		ThreadPoolManager.init();
 		CommandHandler.getInstance();
 		HandlersData.getInstance();
 		QuizData.getInstance();

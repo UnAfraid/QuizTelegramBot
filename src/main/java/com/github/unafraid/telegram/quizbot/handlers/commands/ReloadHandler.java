@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2016 L2J Unity
+ * Copyright (C) 2004-2015 L2J Unity
  * 
  * This file is part of L2J Unity.
  * 
@@ -23,38 +23,39 @@ import java.util.List;
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.objects.Message;
 
+import com.github.unafraid.telegram.quizbot.BotConfig;
 import com.github.unafraid.telegram.quizbot.bothandlers.ChannelBot;
+import com.github.unafraid.telegram.quizbot.data.QuizData;
 import com.github.unafraid.telegram.quizbot.handlers.ICommandHandler;
-import com.github.unafraid.telegram.quizbot.handlers.QuizHandler;
 import com.github.unafraid.telegram.quizbot.util.BotUtil;
 
 /**
  * @author UnAfraid
  */
-public class QuizCommandHandler implements ICommandHandler
+public final class ReloadHandler implements ICommandHandler
 {
 	@Override
 	public String getCommand()
 	{
-		return "/quiz";
+		return "/reload";
 	}
 	
 	@Override
 	public String getUsage()
 	{
-		return "/quiz <start> or <stop> or <skip> or <report>";
+		return "/reload <config|authorizedUsers>";
 	}
 	
 	@Override
 	public String getDescription()
 	{
-		return "Manages quiz status";
+		return "Reloads bot configuration";
 	}
 	
 	@Override
 	public int getRequiredAccessLevel()
 	{
-		return 3;
+		return 5;
 	}
 	
 	@Override
@@ -66,27 +67,23 @@ public class QuizCommandHandler implements ICommandHandler
 			return;
 		}
 		
-		final String cmd = args.get(0);
-		switch (cmd)
+		switch (args.get(0))
 		{
-			case "start":
+			case "config":
 			{
-				QuizHandler.getInstance().startQuiz(bot, message);
+				BotConfig.load();
+				BotUtil.sendMessage(bot, message, "Reloaded configuration successfully!", true, false, null);
 				break;
 			}
-			case "stop":
+			case "quiz":
 			{
-				QuizHandler.getInstance().stopQuiz(bot, message);
+				QuizData.getInstance().load();
+				BotUtil.sendMessage(bot, message, "Reloaded all quiz data!", false, false, null);
 				break;
 			}
-			case "skip":
+			default:
 			{
-				QuizHandler.getInstance().quizSkip(bot, message);
-				break;
-			}
-			case "report":
-			{
-				QuizHandler.getInstance().quizReport(bot, message);
+				BotUtil.sendUsage(bot, message, this);
 				break;
 			}
 		}
