@@ -27,6 +27,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.telegram.telegrambots.TelegramApiException;
+import org.telegram.telegrambots.api.methods.ActionType;
 import org.telegram.telegrambots.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.methods.send.SendPhoto;
@@ -53,7 +54,7 @@ public class BotUtil
 		}
 	}
 	
-	public static void sendAction(ChannelBot bot, Message message, String action) throws TelegramApiException
+	public static void sendAction(ChannelBot bot, Message message, ActionType action) throws TelegramApiException
 	{
 		final SendChatAction sendAction = new SendChatAction();
 		sendAction.setChatId(Long.toString(message.getChat().getId()));
@@ -77,11 +78,11 @@ public class BotUtil
 		msg.enableMarkdown(useMarkDown);
 		if (replyToMessage)
 		{
-			msg.setReplayToMessageId(message.getMessageId());
+			msg.setReplyToMessageId(message.getMessageId());
 		}
 		if (replayMarkup != null)
 		{
-			msg.setReplayMarkup(replayMarkup);
+			msg.setReplyMarkup(replayMarkup);
 		}
 		bot.sendMessage(msg);
 	}
@@ -95,13 +96,13 @@ public class BotUtil
 		{
 			photo.setCaption(caption);
 		}
-		photo.setReplayToMessageId(message.getMessageId());
+		photo.setReplyToMessageId(message.getMessageId());
 		bot.sendPhoto(photo);
 	}
 	
 	public static boolean sendIcon(String fileName, ChannelBot bot, Message message, boolean useCaption) throws IOException, TelegramApiException
 	{
-		sendAction(bot, message, "upload_photo");
+		sendAction(bot, message, ActionType.UPLOADPHOTO);
 		
 		try (ZipInputStream zipInputStream = new ZipInputStream(BotUtil.class.getResourceAsStream("/images.zip")))
 		{
