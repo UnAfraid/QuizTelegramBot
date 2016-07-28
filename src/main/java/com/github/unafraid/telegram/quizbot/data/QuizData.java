@@ -74,6 +74,7 @@ public class QuizData implements IXmlReader
 	public static class QuizQuestion
 	{
 		private final String _question;
+		private final String _file;
 		private final int _answersPerRow;
 		private final int _maxAnswersPerPerson;
 		private final int _maxIncorrectAnswers;
@@ -81,7 +82,8 @@ public class QuizData implements IXmlReader
 		
 		public QuizQuestion(StatsSet set)
 		{
-			_question = set.getString("text");
+			_question = set.getString("text", null);
+			_file = set.getString("file", null);
 			_answersPerRow = set.getInt("answersPerRow", 3);
 			_maxAnswersPerPerson = set.getInt("maxAnswersPerPerson", 1);
 			_maxIncorrectAnswers = set.getInt("maxIncorrectAnswers", Integer.MAX_VALUE);
@@ -90,6 +92,11 @@ public class QuizData implements IXmlReader
 		public String getQuestion()
 		{
 			return _question;
+		}
+		
+		public String getFile()
+		{
+			return _file;
 		}
 		
 		public int getAnswersPerRow()

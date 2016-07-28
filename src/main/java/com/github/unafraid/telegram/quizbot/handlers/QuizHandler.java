@@ -18,6 +18,7 @@
  */
 package com.github.unafraid.telegram.quizbot.handlers;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -141,8 +142,16 @@ public class QuizHandler implements IMessageHandler
 		{
 			final boolean maxIncorrectReached = activeQuestion.getIncorrectAnswersCount() >= activeQuestion.getQuestion().getMaxIncorrectAnswers();
 			final boolean maxCorrectReached = activeQuestion.getCorrectAnswersCount() >= activeQuestion.getQuestion().getCorrectAnswersCount();
-			
-			sj.add("Question: *\"" + activeQuestion.getQuestion().getQuestion() + "\"*");
+			final String question = activeQuestion.getQuestion().getQuestion();
+			final String file = activeQuestion.getQuestion().getFile();
+			if (question != null)
+			{
+				sj.add("Question: *\"" + question + "\"*");
+			}
+			if (file != null)
+			{
+				sj.add("File: *\"" + file + "\"*");
+			}
 			sj.add("   | Answered: " + (maxCorrectReached ? "✅" : maxIncorrectReached ? "🅾" : "🖍"));
 			for (QuizParticipant participant : activeQuestion.getParticipants().values())
 			{
@@ -194,7 +203,16 @@ public class QuizHandler implements IMessageHandler
 	private void onQuestionAsked(QuizQuestion nextQuestion, ChannelBot bot, Message message) throws TelegramApiException
 	{
 		final StringJoiner sj = new StringJoiner(System.lineSeparator());
-		sj.add("The question is: " + nextQuestion.getQuestion());
+		final String question = nextQuestion.getQuestion();
+		final String file = nextQuestion.getFile();
+		if (question != null)
+		{
+			sj.add("The question is: " + nextQuestion.getQuestion());
+		}
+		else
+		{
+			BotUtil.sendPhoto(bot, message, null, false, new File(file));
+		}
 		if (nextQuestion.getMaxIncorrectAnswers() < Integer.MAX_VALUE)
 		{
 			sj.add("You have " + nextQuestion.getMaxIncorrectAnswers() + " maximum incorrect answer attempts");

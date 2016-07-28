@@ -18,6 +18,7 @@
  */
 package com.github.unafraid.telegram.quizbot.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
@@ -97,6 +98,22 @@ public class BotUtil
 			photo.setCaption(caption);
 		}
 		photo.setReplyToMessageId(message.getMessageId());
+		bot.sendPhoto(photo);
+	}
+	
+	public static void sendPhoto(ChannelBot bot, Message message, String caption, boolean replyToMessage, File file) throws TelegramApiException
+	{
+		final SendPhoto photo = new SendPhoto();
+		photo.setChatId(Long.toString(message.getChat().getId()));
+		photo.setNewPhoto(file);
+		if (caption != null)
+		{
+			photo.setCaption(caption);
+		}
+		if (replyToMessage)
+		{
+			photo.setReplyToMessageId(message.getMessageId());
+		}
 		bot.sendPhoto(photo);
 	}
 	

@@ -1,23 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <list xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Quiz-Questions.xsd">
-	<question text="Who's the best?">
-		<answer correct="true">UnAfraid</answer>
-		<answer>Someone else</answer>
-	</question>
-
-	<question text="Whats the correct answer of this question (A)?" answersPerRow="3" maxIncorrectAnswers="2">
-		<answer correct="true">A</answer>
-		<answer>B</answer>
+	<question file="data/question3.jpg" answersPerRow="4" maxIncorrectAnswers="3" maxAnswersPerPerson="2">
+		<answer>A</answer>
+		<answer correct="true">B</answer>
 		<answer>C</answer>
 		<answer>D</answer>
-		<answer>E</answer>
-		<answer>F</answer>
-	</question>
-	
-	<question text="What is that https://media.giphy.com/media/l0OWistc2HUjf6PKM/giphy.gif" maxAnswersPerPerson="2" maxIncorrectAnswers="2" answersPerRow="3">
-		<answer correct="true">Dog</answer>
-		<answer correct="true">Wanna-be dog</answer>
-		<answer>Some fluffy animal</answer>
-		<answer>Pokemon</answer>
 	</question>
 </list>
