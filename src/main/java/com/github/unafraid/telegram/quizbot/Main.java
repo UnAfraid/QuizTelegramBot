@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import com.github.unafraid.telegram.quizbot.data.HandlersData;
 import com.github.unafraid.telegram.quizbot.data.QuizData;
-import com.github.unafraid.telegram.quizbot.database.DatabaseFactory;
 import com.github.unafraid.telegram.quizbot.handlers.CommandHandler;
 
 import sun.management.VMManagement;
@@ -53,7 +52,6 @@ public final class Main extends Thread
 		HandlersData.getInstance();
 		QuizData.getInstance();
 		BotManager.getInstance();
-		DatabaseFactory.getInstance();
 		ShutdownThread.init();
 	}
 	

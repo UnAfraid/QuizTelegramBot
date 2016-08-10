@@ -40,6 +40,7 @@ public class UsersDAOMySQLImpl implements IUsersDAO
 	
 	protected UsersDAOMySQLImpl()
 	{
+		DatabaseFactory.getInstance();
 	}
 	
 	@Override

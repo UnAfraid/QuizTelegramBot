@@ -19,76 +19,56 @@
 package com.github.unafraid.telegram.quizbot.database.dao.users;
 
 import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * @author UnAfraid
  */
-public class UsersFactory implements IUsersDAO
+public class UsersDAOWithoutMySQLImpl implements IUsersDAO
 {
-	private static final Logger LOGGER = LoggerFactory.getLogger(UsersFactory.class);
-	private final IUsersDAO _impl;
+	private final Set<DBUser> _users = ConcurrentHashMap.newKeySet();
 	
-	protected UsersFactory()
+	protected UsersDAOWithoutMySQLImpl()
 	{
-		IUsersDAO impl = null;
-		try
-		{
-			impl = new UsersDAOMySQLImpl();
-		}
-		catch (Exception e)
-		{
-			LOGGER.warn("Failed to initialize UsersDAOMySQLImpl, using UsersDAOWithoutMySQLImpl instead, error: ", e);
-			impl = new UsersDAOWithoutMySQLImpl();
-		}
-		_impl = impl;
 	}
 	
 	@Override
 	public boolean create(DBUser user)
 	{
-		return _impl.create(user);
+		return _users.add(user);
 	}
 	
 	@Override
 	public boolean update(DBUser user)
 	{
-		return _impl.update(user);
+		return _users.contains(user);
 	}
 	
 	@Override
 	public boolean delete(DBUser user)
 	{
-		return _impl.delete(user);
+		return _users.remove(user);
 	}
 	
 	@Override
 	public DBUser findById(int id)
 	{
-		return _impl.findById(id);
+		return _users.stream().filter(user -> user.getId() == id).findFirst().orElse(null);
 	}
 	
 	@Override
 	public DBUser findByUsername(String username)
 	{
-		return _impl.findByUsername(username);
+		Objects.requireNonNull(username);
+		return _users.stream().filter(user -> username.equalsIgnoreCase(user.getName())).findFirst().orElse(null);
 	}
 	
 	@Override
 	public List<DBUser> findAll()
 	{
-		return _impl.findAll();
-	}
-	
-	public static UsersFactory getInstance()
-	{
-		return SingletonHolder.INSTANCE;
-	}
-	
-	private static class SingletonHolder
-	{
-		protected static final UsersFactory INSTANCE = new UsersFactory();
+		return _users.stream().collect(Collectors.toList());
 	}
 }

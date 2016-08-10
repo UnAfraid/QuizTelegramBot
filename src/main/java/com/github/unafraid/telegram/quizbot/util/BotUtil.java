@@ -19,13 +19,10 @@
 package com.github.unafraid.telegram.quizbot.util;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.methods.ActionType;
@@ -88,11 +85,12 @@ public class BotUtil
 		bot.sendMessage(msg);
 	}
 	
-	public static void sendPhoto(ChannelBot bot, Message message, String caption, InputStream dataStream) throws TelegramApiException
+	public static void sendPhoto(ChannelBot bot, Message message, String caption, String fileName, InputStream dataStream) throws TelegramApiException
 	{
 		final SendPhoto photo = new SendPhoto();
 		photo.setChatId(Long.toString(message.getChat().getId()));
-		photo.setNewPhoto(dataStream);
+		photo.setPhoto(fileName);
+		photo.setNewPhoto(fileName, dataStream);
 		if (caption != null)
 		{
 			photo.setCaption(caption);
@@ -115,40 +113,6 @@ public class BotUtil
 			photo.setReplyToMessageId(message.getMessageId());
 		}
 		bot.sendPhoto(photo);
-	}
-	
-	public static boolean sendIcon(String fileName, ChannelBot bot, Message message, boolean useCaption) throws IOException, TelegramApiException
-	{
-		sendAction(bot, message, ActionType.UPLOADPHOTO);
-		
-		try (ZipInputStream zipInputStream = new ZipInputStream(BotUtil.class.getResourceAsStream("/images.zip")))
-		{
-			final String iconName = fileName + ".png";
-			ZipEntry entry;
-			while ((entry = zipInputStream.getNextEntry()) != null)
-			{
-				if (entry.getName().equalsIgnoreCase(iconName))
-				{
-					try
-					{
-						if (useCaption)
-						{
-							sendPhoto(bot, message, iconName, zipInputStream);
-						}
-						else
-						{
-							sendPhoto(bot, message, null, zipInputStream);
-						}
-					}
-					catch (Exception e)
-					{
-						sendMessage(bot, message, "Couldn't send " + iconName + " error: " + e.getMessage(), false, false, null);
-					}
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 	
 	/**

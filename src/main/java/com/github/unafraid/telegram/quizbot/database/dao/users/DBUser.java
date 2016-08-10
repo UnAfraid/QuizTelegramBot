@@ -63,4 +63,20 @@ public class DBUser
 	{
 		_level = level;
 	}
+	
+	@Override
+	public boolean equals(Object object)
+	{
+		if (!(object instanceof DBUser))
+		{
+			return false;
+		}
+		else if (object == this)
+		{
+			return true;
+		}
+		
+		final DBUser user = (DBUser) object;
+		return (user.getId() == _id) && (user.getLevel() == _level) && (((user.getName() == null) && (_name == null)) || (user.getName().equalsIgnoreCase(_name)));
+	}
 }
