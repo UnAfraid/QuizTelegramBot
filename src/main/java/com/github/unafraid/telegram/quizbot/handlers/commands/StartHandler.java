@@ -24,6 +24,8 @@ import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.objects.Message;
 
 import com.github.unafraid.telegram.quizbot.bothandlers.ChannelBot;
+import com.github.unafraid.telegram.quizbot.database.dao.users.DBUser;
+import com.github.unafraid.telegram.quizbot.database.dao.users.UsersFactory;
 import com.github.unafraid.telegram.quizbot.handlers.ICommandHandler;
 import com.github.unafraid.telegram.quizbot.util.BotUtil;
 
@@ -53,6 +55,14 @@ public final class StartHandler implements ICommandHandler
 	@Override
 	public void onMessage(ChannelBot bot, Message message, int updateId, List<String> args) throws TelegramApiException
 	{
-		BotUtil.sendMessage(bot, message, "Hello, i am Quiz Telegram bot, if you want to know what i can do type /start", true, false, null);
+		if (UsersFactory.getInstance().findAll().isEmpty())
+		{
+			UsersFactory.getInstance().create(new DBUser(message.getFrom().getId(), message.getFrom().getUserName(), 10));
+			BotUtil.sendMessage(bot, message, "Hello, " + message.getFrom().getUserName() + " since you're the first who wrote me, you're my master!", true, false, null);
+		}
+		else
+		{
+			BotUtil.sendMessage(bot, message, "Hello, i am Quiz Telegram bot, if you want to know what i can do type /start", true, false, null);
+		}
 	}
 }

@@ -46,6 +46,11 @@ public class QuizData implements IXmlReader
 	public void load()
 	{
 		_quizQuestions.clear();
+		File quizFile = new File("config/Quiz-Questions.xml");
+		if (!quizFile.exists())
+		{
+			quizFile = new File("dist/config/Quiz-Questions.xml");
+		}
 		parseFile(new File("config/Quiz-Questions.xml"));
 		LOGGER.info("Loaded: {} quiz questions", _quizQuestions.size());
 	}
