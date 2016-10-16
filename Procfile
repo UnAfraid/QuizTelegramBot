@@ -1,1 +1,1 @@
-web: java -jar build/libs/QuizTelegramBot.jar
+worker: java -jar build/libs/QuizTelegramBot.jar
