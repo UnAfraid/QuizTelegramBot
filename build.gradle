@@ -1,8 +1,10 @@
+apply plugin: 'application'
 apply plugin: 'eclipse'
 apply plugin: 'java'
 apply plugin: 'distribution'
 
 sourceCompatibility = '1.8'
+mainClassName = 'com.github.unafraid.telegram.quizbot.Main'
 
 task wrapper(type: Wrapper) {
 	gradleVersion = '2.5'
@@ -42,6 +44,9 @@ jar {
 	}	
 }
 
+task stage {
+  dependsOn clean, build
+}
 
 
 distributions {
@@ -64,7 +69,7 @@ eclipse {
 
 tasks.eclipse.doLast {
 	copy {
-		from('.eclipse-settings')
+		from('eclipse-settings')
 		into('.settings')
 	}
 }
