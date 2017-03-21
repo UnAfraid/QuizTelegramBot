@@ -45,27 +45,7 @@ public class HandlersData implements IXmlReader
 	@Override
 	public void load()
 	{
-		final String token = System.getenv("BOT_TOKEN");
-		final String username = System.getenv("BOT_USERNAME");
-		final String handler = System.getenv("BOT_HANDLER");
-		final File handlersFile = new File("config/handlers.xml");
-		if (handlersFile.exists())
-		{
-			parseFile(new File("config/handlers.xml"));
-		}
-		else
-		{
-			if (token != null && username != null && handler != null)
-			{
-				final StatsSet set = new StatsSet();
-				set.set("primary", true);
-				set.set("enabled", true);
-				set.set("token", token);
-				set.set("username", username);
-				set.set("handler", handler);
-				_handlerEntries.add(new HandlerEntry(set));
-			}
-		}
+		parseFile(new File("config/handlers.xml"));
 		LOGGER.info("Loaded: {} handlers", _handlerEntries.size());
 	}
 	

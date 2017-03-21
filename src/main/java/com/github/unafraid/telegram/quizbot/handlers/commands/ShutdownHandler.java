@@ -20,8 +20,8 @@ package com.github.unafraid.telegram.quizbot.handlers.commands;
 
 import java.util.List;
 
-import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.objects.Message;
+import org.telegram.telegrambots.exceptions.TelegramApiException;
 
 import com.github.unafraid.telegram.quizbot.bothandlers.ChannelBot;
 import com.github.unafraid.telegram.quizbot.handlers.ICommandHandler;
@@ -60,7 +60,6 @@ public final class ShutdownHandler implements ICommandHandler
 	public void onMessage(ChannelBot bot, Message message, int updateId, List<String> args) throws TelegramApiException
 	{
 		BotUtil.sendMessage(bot, message, "Okay i am shutting down! :(", false, false, null);
-		// bot.getUpdates(updateId + 1, 1, 0); // Force this update as received
 		Runtime.getRuntime().halt(0);
 	}
 }

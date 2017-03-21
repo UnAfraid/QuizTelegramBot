@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.exceptions.TelegramApiRequestException;
 
 import com.github.unafraid.telegram.quizbot.bothandlers.ChannelBot;
 import com.github.unafraid.telegram.quizbot.data.HandlersData;
@@ -66,6 +67,10 @@ public final class BotManager
 					LOGGER.info("Initialized bot handler: {} - {}", bot.getClass().getSimpleName(), entry.getUsername());
 				}
 				_bots.add(bot);
+			}
+			catch (TelegramApiRequestException e)
+			{
+				LOGGER.warn("Failed to initialize bot handler: {} response: {}", entry.getHandler(), e.getApiResponse(), e);
 			}
 			catch (Exception e)
 			{
@@ -110,11 +115,11 @@ public final class BotManager
 	
 	public static BotManager getInstance()
 	{
-		return SingletonHolder._instance;
+		return SingletonHolder.INSTANCE;
 	}
 	
 	private static class SingletonHolder
 	{
-		protected static final BotManager _instance = new BotManager();
+		protected static final BotManager INSTANCE = new BotManager();
 	}
 }

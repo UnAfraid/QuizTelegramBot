@@ -31,13 +31,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Stream;
 
-import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.User;
-import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardHide;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardRow;
+import org.telegram.telegrambots.exceptions.TelegramApiException;
 
 import com.github.unafraid.telegram.quizbot.bothandlers.ChannelBot;
 import com.github.unafraid.telegram.quizbot.data.QuizData;
@@ -111,7 +111,7 @@ public class QuizHandler implements IMessageHandler
 		final QuizActiveQuestion activeQuestion = _activeQuestion;
 		if (activeQuestion == null)
 		{
-			BotUtil.sendMessage(bot, message, "There isn't any quiz running right now!", true, true, new ReplyKeyboardHide());
+			BotUtil.sendMessage(bot, message, "There isn't any quiz running right now!", true, true, new ReplyKeyboardRemove());
 			return;
 		}
 		
@@ -119,7 +119,7 @@ public class QuizHandler implements IMessageHandler
 		
 		try
 		{
-			BotUtil.sendMessage(bot, message, "Skipping current question", true, true, new ReplyKeyboardHide());
+			BotUtil.sendMessage(bot, message, "Skipping current question", true, true, new ReplyKeyboardRemove());
 			_answeredQuestions.add(activeQuestion);
 			final QuizQuestion nextQuestion = _pendingQuestions.poll();
 			if (nextQuestion != null)
@@ -269,7 +269,7 @@ public class QuizHandler implements IMessageHandler
 			final QuizQuestion nextQuestion = _pendingQuestions.poll();
 			if (nextQuestion != null)
 			{
-				BotUtil.sendMessage(bot, message, maxIncorrectReached ? "Maximum incorrect answers reached failed to answer this one, proceeding to next question!" : "All necessary answers were provided, proceeding to next question!", false, true, new ReplyKeyboardHide());
+				BotUtil.sendMessage(bot, message, maxIncorrectReached ? "Maximum incorrect answers reached failed to answer this one, proceeding to next question!" : "All necessary answers were provided, proceeding to next question!", false, true, new ReplyKeyboardRemove());
 				setQuestion(nextQuestion);
 				onQuestionAsked(nextQuestion, bot, message);
 			}
@@ -281,7 +281,7 @@ public class QuizHandler implements IMessageHandler
 				{
 					_pendingQuestions.clear();
 					_activeQuestion = null;
-					BotUtil.sendMessage(bot, message, "All questions have been answered!", false, true, new ReplyKeyboardHide());
+					BotUtil.sendMessage(bot, message, "All questions have been answered!", false, true, new ReplyKeyboardRemove());
 				}
 				finally
 				{

@@ -51,7 +51,7 @@ public class QuizData implements IXmlReader
 		{
 			quizFile = new File("dist/config/Quiz-Questions.xml");
 		}
-		parseFile(new File("config/Quiz-Questions.xml"));
+		parseFile(quizFile);
 		LOGGER.info("Loaded: {} quiz questions", _quizQuestions.size());
 	}
 	

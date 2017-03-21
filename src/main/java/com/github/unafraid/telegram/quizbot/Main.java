@@ -29,6 +29,7 @@ import java.nio.file.StandardOpenOption;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.telegram.telegrambots.ApiContextInitializer;
 
 import com.github.unafraid.telegram.quizbot.data.HandlersData;
 import com.github.unafraid.telegram.quizbot.data.QuizData;
@@ -48,6 +49,7 @@ public final class Main extends Thread
 		writePID();
 		
 		BotConfig.load();
+		ApiContextInitializer.init();
 		CommandHandler.getInstance();
 		HandlersData.getInstance();
 		QuizData.getInstance();

@@ -19,18 +19,7 @@
 package com.github.unafraid.telegram.quizbot;
 
 import java.io.File;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.github.unafraid.telegram.quizbot.database.DatabaseFactory;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -39,7 +28,6 @@ import com.typesafe.config.ConfigFactory;
  */
 public final class BotConfig
 {
-	private static final Logger LOGGER = LoggerFactory.getLogger(BotConfig.class);
 	public static String DATABASE_DRIVER = "com.mysql.jdbc.Driver";
 	public static int DATABASE_MAX_CONNECTIONS = 2;
 	public static int DATABASE_MAX_IDLE_TIME = 0;
@@ -54,45 +42,6 @@ public final class BotConfig
 	
 	public static void load()
 	{
-		String dbUrl = System.getenv("JAWSDB_URL");
-		if (dbUrl == null)
-		{
-			dbUrl = System.getenv("JAWSDB_MARIA_URL");
-		}
-		if (dbUrl != null)
-		{
-			try
-			{
-				final URI jdbUri = new URI(dbUrl);
-				
-				String username = jdbUri.getUserInfo().split(":")[0];
-				String password = jdbUri.getUserInfo().split(":")[1];
-				String port = String.valueOf(jdbUri.getPort());
-				String jdbUrl = "jdbc:mysql://" + jdbUri.getHost() + ":" + port + jdbUri.getPath();
-				
-				DATABASE_URL = jdbUrl;
-				DATABASE_LOGIN = username;
-				DATABASE_PASSWORD = password;
-				try (Connection con = DatabaseFactory.getInstance().getConnection();
-					PreparedStatement ps = con.prepareStatement("SHOW TABLES LIKE ?");
-					Statement st = con.createStatement())
-				{
-					ps.setString(1, "users");
-					try (ResultSet rs = ps.executeQuery())
-					{
-						if (!rs.next())
-						{
-							st.execute(new String(Files.readAllBytes(Paths.get("dist/sql/users.sql"))));
-						}
-					}
-				}
-			}
-			catch (Exception e)
-			{
-				LOGGER.warn("Failed to setup database", e);
-			}
-			return;
-		}
 		final Config config = ConfigFactory.parseFile(new File("config/bot.conf"));
 		
 		// Database

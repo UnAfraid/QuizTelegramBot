@@ -18,8 +18,8 @@
  */
 package com.github.unafraid.telegram.quizbot.handlers;
 
-import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.objects.Message;
+import org.telegram.telegrambots.exceptions.TelegramApiException;
 
 import com.github.unafraid.telegram.quizbot.bothandlers.ChannelBot;
 
